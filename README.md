@@ -37,7 +37,7 @@ A web application that analyzes a resume against a job description and provides 
 
 ### Prerequisites
 
-- Python installed
+- Python
 - pip package manager
 - Git (optional)
 
@@ -47,8 +47,6 @@ A web application that analyzes a resume against a job description and provides 
 git clone https://github.com/Anuradha20011/AI-Resume-Analyzer.git
 cd AI-Resume-Analyzer
 ```
-
-Replace the placeholders with your GitHub username and repository name.
 
 ### 2. Create a Virtual Environment
 
@@ -74,11 +72,9 @@ pip install -r requirements.txt
 python app.py
 ```
 
-Open the application in your browser:
+Open your browser and visit:
 
-```text
-http://127.0.0.1:5000
-```
+`http://127.0.0.1:5000`
 
 The first run may take longer if the semantic model needs to download its files.
 
