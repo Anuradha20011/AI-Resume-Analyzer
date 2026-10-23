@@ -404,17 +404,7 @@ def analyze():
         
         session["report"] = report_data
 
-        history_entry = AnalysisHistory(
-            job_title=report_data["job_title"],
-            match_score=report_data["match_score"],
-            keyword_coverage=report_data["keyword_coverage"],
-            matched_skills=json.dumps(report_data["matched_skills"]),
-            missing_skills=json.dumps(report_data["missing_skills"]),
-            suggestions=json.dumps(report_data["suggestions"])
-        )
-
-        db.session.add(history_entry)
-        db.session.commit()
+        
 
         return render_template("result.html", **report_data)
 
@@ -435,109 +425,23 @@ def analyze():
 
 @app.route("/delete-analysis/<int:analysis_id>", methods=["POST"])
 def delete_analysis(analysis_id):
-    analysis = db.session.get(AnalysisHistory, analysis_id)
+    return redirect("/")
 
-    if analysis is None:
-        return "Analysis not found.", 404
-
-    db.session.delete(analysis)
-    db.session.commit()
-
-    return redirect("/history")
 
 @app.route("/delete-selected-analyses", methods=["POST"])
 def delete_selected_analyses():
-    selected_ids = request.form.getlist("analysis_ids")
-
-    valid_ids = set()
-
-    for value in selected_ids:
-        try:
-            analysis_id = int(value)
-            if analysis_id > 0:
-                valid_ids.add(analysis_id)
-        except (TypeError, ValueError):
-            continue
-
-    if not valid_ids:
-        return redirect("/history")
-
-    analyses_to_delete = AnalysisHistory.query.filter(
-        AnalysisHistory.id.in_(valid_ids)
-    ).all()
-
-    for analysis in analyses_to_delete:
-        db.session.delete(analysis)
-
-    db.session.commit()
-
-    return redirect("/history")
+    return redirect("/")
 
 
 @app.route("/view-report/<int:analysis_id>")
 def view_report(analysis_id):
-    analysis = db.session.get(AnalysisHistory, analysis_id)
-
-    if analysis is None:
-        return "Analysis not found.", 404
-
-    matched_skills = json.loads(analysis.matched_skills or "[]")
-    missing_skills = json.loads(analysis.missing_skills or "[]")
-    suggestions = json.loads(analysis.suggestions or "[]")
-
-    # Old records have scores but may not contain saved skill details.
-    has_saved_details = bool(
-        analysis.matched_skills is not None
-        or analysis.missing_skills is not None
-        or analysis.suggestions is not None
-    )
-
-    report_data = {
-        "job_title": analysis.job_title,
-        "match_score": analysis.match_score,
-        "keyword_coverage": analysis.keyword_coverage,
-        "matched_skills": matched_skills,
-        "missing_skills": missing_skills,
-        "matched_count": len(matched_skills),
-        "missing_count": len(missing_skills),
-        "job_skill_count": (
-            len(matched_skills) + len(missing_skills)
-            if has_saved_details else 0
-        ),
-        "suggestions": suggestions
-    }
-
-    if not has_saved_details:
-        report_data["history_notice"] = (
-            "This is an older report. Detailed skill data was not saved "
-            "when it was created. Run a new analysis to see the full report."
-        )
-
-    return render_template("result.html", **report_data)
+    return redirect("/")
 
 
 @app.route("/history")
 def history():
-    analyses = AnalysisHistory.query.order_by(
-        AnalysisHistory.created_at.desc()
-    ).all()
+    return redirect("/")
 
-    total_analyses = len(analyses)
-
-    average_score = (
-        round(
-            sum(item.match_score for item in analyses) / total_analyses,
-            2
-        )
-        if total_analyses else 0
-    )
-
-    return render_template(
-        "history.html",
-        analyses=analyses,
-        total_analyses=total_analyses,
-        average_score=average_score
-    )
 
 @app.route("/download-report")
 def download_report():
