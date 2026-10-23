@@ -1,0 +1,35 @@
+# Python
+__pycache__/
+*.py[cod]
+
+# Virtual environment
+venv/
+.venv/
+env/
+
+# Environment variables and secrets
+.env
+.env.*
+
+# Local database
+*.db
+*.sqlite
+*.sqlite3
+
+# Private uploads
+uploads/
+
+# IDE and operating system
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+
+# Resume PDF files
+*.pdf
+
+# Local database
+instance/
+
+# Resume PDFs
+*.pdf

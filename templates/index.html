@@ -1,0 +1,355 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Resume Analyzer</title>
+
+    <style>
+        * { box-sizing: border-box; }
+
+        :root {
+            --navy: #172554;
+            --blue: #2563eb;
+            --teal: #0d9488;
+            --bg: #f4f7fb;
+            --muted: #64748b;
+            --border: #e2e8f0;
+        }
+
+        body {
+            margin: 0;
+            background: var(--bg);
+            color: #1e293b;
+            font-family: Arial, sans-serif;
+        }
+
+        .topbar {
+            background: #fff;
+            border-bottom: 1px solid var(--border);
+            padding: 18px 6%;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .brand {
+            color: var(--navy);
+            font-size: 21px;
+            font-weight: 700;
+        }
+
+        .brand span { color: var(--teal); }
+        
+        .header-actions {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .history-button {
+            display: inline-block;
+            background: #e0f2fe;
+            color: #075985;
+            padding: 8px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+            text-decoration: none;
+            transition: background 0.2s;
+        }
+
+        .history-button:hover {
+            background: #bae6fd;
+        }
+
+        @media (max-width: 480px) {
+            .header-actions {
+            gap: 6px;
+            flex-wrap: wrap;
+            justify-content: flex-end;
+            }
+
+            .history-button {
+                padding: 7px 9px;
+                font-size: 11px;
+            }
+        }   
+
+
+        .tag {
+            background: #e0f2fe;
+            color: #075985;
+            padding: 7px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+        }
+
+        .container {
+            max-width: 1100px;
+            margin: 38px auto;
+            padding: 0 20px;
+        }
+
+        .intro { margin-bottom: 26px; }
+
+        .intro h1 {
+            color: var(--navy);
+            font-size: 30px;
+            margin: 0 0 10px;
+        }
+
+        .intro p {
+            color: var(--muted);
+            line-height: 1.6;
+            margin: 0;
+        }
+
+        .layout {
+            display: grid;
+            grid-template-columns: minmax(0, 1.6fr) minmax(260px, 1fr);
+            gap: 22px;
+            align-items: start;
+        }
+
+        .card {
+            background: #fff;
+            border: 1px solid var(--border);
+            border-radius: 14px;
+            padding: 26px;
+            box-shadow: 0 5px 18px rgba(15, 23, 42, 0.04);
+        }
+
+        .card h2 {
+            margin: 0 0 8px;
+            color: var(--navy);
+            font-size: 19px;
+        }
+
+        .subtext {
+            color: var(--muted);
+            font-size: 13px;
+            line-height: 1.6;
+            margin: 0 0 24px;
+        }
+
+        label {
+            display: block;
+            font-size: 14px;
+            font-weight: 600;
+            margin: 18px 0 8px;
+        }
+
+        input[type="text"],
+        input[type="file"],
+        textarea {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid #cbd5e1;
+            border-radius: 7px;
+            background: #fff;
+            color: #1e293b;
+            font: inherit;
+        }
+
+        input:focus, textarea:focus {
+            outline: 2px solid #bfdbfe;
+            border-color: var(--blue);
+        }
+
+        textarea {
+            min-height: 190px;
+            resize: vertical;
+            line-height: 1.6;
+        }
+
+        input[type="file"] { font-size: 13px; }
+
+        .hint {
+            color: var(--muted);
+            font-size: 12px;
+            margin-top: 7px;
+        }
+
+        .button {
+            width: 100%;
+            margin-top: 22px;
+            padding: 14px;
+            border: 0;
+            border-radius: 7px;
+            background: var(--blue);
+            color: white;
+            font-size: 15px;
+            font-weight: 700;
+            cursor: pointer;
+        }
+
+        .button:hover { background: var(--navy); }
+
+        .error {
+            padding: 12px 14px;
+            margin-bottom: 18px;
+            background: #fef2f2;
+            color: #991b1b;
+            border: 1px solid #fecaca;
+            border-radius: 7px;
+            font-size: 14px;
+        }
+
+        .feature {
+            padding: 17px 0;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .feature:last-child { border-bottom: 0; }
+
+        .feature strong {
+            display: block;
+            color: var(--navy);
+            margin-bottom: 6px;
+            font-size: 14px;
+        }
+
+        .feature p {
+            color: var(--muted);
+            font-size: 13px;
+            line-height: 1.6;
+            margin: 0;
+        }
+
+        .icon {
+            display: inline-grid;
+            place-items: center;
+            width: 34px;
+            height: 34px;
+            margin-bottom: 10px;
+            border-radius: 8px;
+            background: #e0f2fe;
+            color: #1d4ed8;
+            font-weight: 700;
+        }
+
+        .notice {
+            background: #f0fdfa;
+            border: 1px solid #ccfbf1;
+            border-radius: 9px;
+            padding: 15px;
+            margin-top: 20px;
+            color: #115e59;
+            font-size: 13px;
+            line-height: 1.6;
+        }
+
+        footer {
+            text-align: center;
+            color: var(--muted);
+            font-size: 12px;
+            padding: 28px 12px;
+        }
+
+        @media (max-width: 760px) {
+            .layout { grid-template-columns: 1fr; }
+            .container { margin-top: 26px; }
+            .intro h1 { font-size: 25px; }
+            .card { padding: 21px; }
+            .topbar { padding: 16px 20px; }
+        }
+    </style>
+</head>
+
+<body>
+    
+    <header class="topbar">
+        <div class="brand">Resume<span>AI</span></div>
+
+        <div class="header-actions">
+            <a href="/history" class="history-button">Analysis History</a>
+            <span class="tag">AI Resume Analysis</span>
+        </div>
+    </header>
+
+    <main class="container">
+        <section class="intro">
+            <h1>Find Your Resume Match</h1>
+            <p>
+                Compare your resume with a job description, identify relevant
+                skills and discover opportunities to improve your application.
+            </p>
+        </section>
+
+        <div class="layout">
+            <section class="card">
+                <h2>Start a New Analysis</h2>
+                <p class="subtext">
+                    Upload your resume and provide the role details below.
+                </p>
+
+                {% if error %}
+                <div class="error">{{ error }}</div>
+                {% endif %}
+
+                <form action="/analyze" method="post"
+                      enctype="multipart/form-data">
+
+                    <label for="resume">Upload Resume (PDF) *</label>
+                    <input id="resume" type="file" name="resume"
+                           accept=".pdf,application/pdf" required>
+                    <p class="hint">PDF format only · Maximum file size: 10 MB</p>
+
+                    <label for="job_title">Target Job Title</label>
+                    <input id="job_title" type="text" name="job_title"
+                           placeholder="e.g. Java Developer">
+
+                    <label for="job_description">Job Description *</label>
+                    <textarea id="job_description" name="job_description"
+                              placeholder="Paste the job description here. Include responsibilities and required skills..."
+                              required></textarea>
+
+                    <button class="button" type="submit">
+                        Analyze Resume
+                    </button>
+                </form>
+            </section>
+
+            <aside>
+                <section class="card">
+                    <h2>What You'll Get</h2>
+                    <p class="subtext">
+                        A clear overview to help you tailor your application.
+                    </p>
+
+                    <div class="feature">
+                        <div class="icon">01</div>
+                        <strong>Semantic Match Score</strong>
+                        <p>Estimate how closely your resume relates to the job description.</p>
+                    </div>
+
+                    <div class="feature">
+                        <div class="icon">02</div>
+                        <strong>Skill Comparison</strong>
+                        <p>See detected skills that appear in both texts and skills to review.</p>
+                    </div>
+
+                    <div class="feature">
+                        <div class="icon">03</div>
+                        <strong>Improvement Suggestions</strong>
+                        <p>Get practical guidance for making your resume more relevant.</p>
+                    </div>
+                </section>
+
+                <div class="notice">
+                    <strong>Privacy note</strong><br>
+                    Your uploaded PDF is processed temporarily and is not
+                    intentionally saved in the project upload folder.
+                </div>
+            </aside>
+        </div>
+    </main>
+
+    <footer>
+        AI Resume Analyzer · Python · Flask · Semantic Text Similarity
+    </footer>
+</body>
+</html>

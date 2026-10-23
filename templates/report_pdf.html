@@ -1,0 +1,130 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Resume Analysis Report</title>
+    <style>
+        @page {
+            size: A4;
+            margin: 18mm;
+        }
+
+        body {
+            font-family: Arial, sans-serif;
+            color: #1e293b;
+            font-size: 12px;
+            line-height: 1.6;
+        }
+
+        h1, h2 {
+            color: #172554;
+        }
+
+        h1 {
+            font-size: 25px;
+            margin-bottom: 5px;
+        }
+
+        h2 {
+            font-size: 16px;
+            margin-top: 24px;
+            border-bottom: 1px solid #e2e8f0;
+            padding-bottom: 6px;
+        }
+
+        .subtitle {
+            color: #64748b;
+        }
+
+        .score {
+            font-size: 30px;
+            font-weight: bold;
+            color: #0d9488;
+            margin: 18px 0;
+        }
+
+        .metric {
+            background: #f1f5f9;
+            padding: 12px;
+            margin: 8px 0;
+        }
+
+        .skill {
+            display: inline-block;
+            padding: 5px 8px;
+            margin: 3px;
+            background: #dcfce7;
+            color: #166534;
+            border-radius: 4px;
+        }
+
+        .missing {
+            background: #fee2e2;
+            color: #991b1b;
+        }
+
+        li {
+            margin-bottom: 8px;
+        }
+
+        .footer {
+            margin-top: 30px;
+            color: #64748b;
+            font-size: 10px;
+        }
+    </style>
+</head>
+<body>
+    <h1>Resume Analysis Report</h1>
+    <p class="subtitle">Target role: {{ job_title }}</p>
+
+    <h2>Overall Results</h2>
+    <div class="score">{{ match_score }}% Match Score</div>
+
+    <div class="metric">
+        <strong>Matched Skills:</strong> {{ matched_count }}
+    </div>
+    <div class="metric">
+        <strong>Skills to Review:</strong> {{ missing_count }}
+    </div>
+    <div class="metric">
+        <strong>Job Skill Coverage:</strong> {{ keyword_coverage }}%
+    </div>
+
+    <h2>Matched Skills</h2>
+    {% if matched_skills %}
+        {% for skill in matched_skills %}
+            <span class="skill">{{ skill }}</span>
+        {% endfor %}
+    {% else %}
+        <p>No matching skills detected.</p>
+    {% endif %}
+
+    <h2>Skills to Review</h2>
+    {% if missing_skills %}
+        {% for skill in missing_skills %}
+            <span class="skill missing">{{ skill }}</span>
+        {% endfor %}
+    {% else %}
+        <p>No missing supported skills detected.</p>
+    {% endif %}
+
+    <h2>Recommended Improvements</h2>
+    {% if suggestions %}
+        <ul>
+        {% for tip in suggestions %}
+            <li>{{ tip }}</li>
+        {% endfor %}
+        </ul>
+    {% else %}
+        <p>No additional suggestions generated.</p>
+    {% endif %}
+
+    <p class="footer">
+        AI Resume Analyzer · Python · Flask · RoBERTa<br>
+        Similarity scores are estimates, not hiring probabilities or
+        validated ATS scores.
+    </p>
+</body>
+</html>
