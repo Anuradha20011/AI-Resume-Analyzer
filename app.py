@@ -73,7 +73,7 @@ SKILL_ALIASES = {
     "problem-solving": ["problem-solving", "problem solving"]
 }
 
-model = SentenceTransformer("stsb-roberta-large")
+model = SentenceTransformer("sentence-transformers/all-MiniLM-L6-v2")
 
 
 def extract_text(pdf_path):
