@@ -9,6 +9,7 @@ from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer
 from reportlab.lib.styles import getSampleStyleSheet
 from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.metrics.pairwise import cosine_similarity
+from datetime import datetime
 import os
 import re
 import tempfile
@@ -404,7 +405,28 @@ def analyze():
         }
         
         session["report"] = report_data
+        
+        history = session.get("history", [])
+        history.insert(0, {
+            "id": int(datetime.now().timestamp()),
+            "job_title": (job_title or "Job Role")[:80],
+            "match_score": match_score,
+            "keyword_coverage": keyword_coverage,
+            "created_at": datetime.now().strftime("%d %b %Y, %H:%M"),
+        })
+        session["history"] = history[:5]
+        
+        history_entry = AnalysisHistory(
+            job_title=report_data["job_title"],
+            match_score=report_data["match_score"],
+            keyword_coverage=report_data["keyword_coverage"],
+            matched_skills=json.dumps(report_data["matched_skills"]),
+            missing_skills=json.dumps(report_data["missing_skills"]),
+            suggestions=json.dumps(report_data["suggestions"])
+        )
 
+        db.session.add(history_entry)
+        db.session.commit()
         
 
         return render_template("result.html", **report_data)
@@ -423,26 +445,46 @@ def analyze():
             except OSError:
                 app.logger.warning("Could not remove temporary upload file.")
 
-
 @app.route("/delete-analysis/<int:analysis_id>", methods=["POST"])
 def delete_analysis(analysis_id):
-    return redirect("/")
+    history = [
+        h for h in session.get("history", [])
+        if h["id"] != analysis_id
+    ]
+    session["history"] = history
+    return redirect("/history")
 
 
 @app.route("/delete-selected-analyses", methods=["POST"])
 def delete_selected_analyses():
-    return redirect("/")
+    selected = set(request.form.getlist("analysis_ids"))
+    history = [
+        h for h in session.get("history", [])
+        if str(h["id"]) not in selected
+    ]
+    session["history"] = history
+    return redirect("/history")
 
 
 @app.route("/view-report/<int:analysis_id>")
 def view_report(analysis_id):
-    return redirect("/")
+    return redirect("/history")
 
 
 @app.route("/history")
 def history():
-    return redirect("/")
-
+    analyses = session.get("history", [])
+    total = len(analyses)
+    average = (
+        round(sum(a["match_score"] for a in analyses) / total, 2)
+        if total else 0
+    )
+    return render_template(
+        "history.html",
+        analyses=analyses,
+        total_analyses=total,
+        average_score=average,
+    )
 
 @app.route("/download-report")
 def download_report():
@@ -723,33 +765,34 @@ def file_too_large(error):
     ), 413
 
 
-if __name__ == "__main__":
-    with app.app_context():
-        db.create_all()
+with app.app_context():
+    db.create_all()
 
-        columns = {
-            column["name"]
-            for column in db.session.execute(
-                db.text("PRAGMA table_info(analysis_history)")
-            ).mappings()
-        }
+    columns = {
+        column["name"]
+        for column in db.session.execute(
+            db.text("PRAGMA table_info(analysis_history)")
+        ).mappings()
+    }
 
-        new_columns = {
-            "matched_skills": "TEXT",
-            "missing_skills": "TEXT",
-            "suggestions": "TEXT",
-        }
+    new_columns = {
+        "matched_skills": "TEXT",
+        "missing_skills": "TEXT",
+        "suggestions": "TEXT",
+    }
 
-        for column_name, column_type in new_columns.items():
-            if column_name not in columns:
-                db.session.execute(
-                    db.text(
-                        f"ALTER TABLE analysis_history "
-                        f"ADD COLUMN {column_name} {column_type}"
-                    )
+    for column_name, column_type in new_columns.items():
+        if column_name not in columns:
+            db.session.execute(
+                db.text(
+                    f"ALTER TABLE analysis_history "
+                    f"ADD COLUMN {column_name} {column_type}"
                 )
+            )
 
-        db.session.commit()
+    db.session.commit()
 
+
+if __name__ == "__main__":
     app.run(debug=True)
 
