@@ -7,7 +7,8 @@ from reportlab.lib import colors
 from reportlab.lib.styles import ParagraphStyle
 from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer
 from reportlab.lib.styles import getSampleStyleSheet
-from sentence_transformers import SentenceTransformer, util
+from sklearn.feature_extraction.text import TfidfVectorizer
+from sklearn.metrics.pairwise import cosine_similarity
 import os
 import re
 import tempfile
@@ -73,7 +74,15 @@ SKILL_ALIASES = {
     "problem-solving": ["problem-solving", "problem solving"]
 }
 
-model = SentenceTransformer("sentence-transformers/all-MiniLM-L6-v2")
+def calculate_similarity(resume_text, job_desc):
+    vectorizer = TfidfVectorizer(
+        stop_words="english", ngram_range=(1, 2), sublinear_tf=True
+    )
+    try:
+        tfidf = vectorizer.fit_transform([resume_text, job_desc])
+    except ValueError:
+        return 0.0
+    return float(cosine_similarity(tfidf[0], tfidf[1])[0][0])
 
 
 def extract_text(pdf_path):
@@ -153,15 +162,7 @@ def analyze():
                 "index.html",
                 error="No readable text found. Please upload a text-based PDF."
             ), 400
-
-        embeddings = model.encode(
-            [resume_text, job_desc],
-            convert_to_tensor=True
-        )
-
-        similarity = util.pytorch_cos_sim(
-            embeddings[0], embeddings[1]
-        ).item()
+        similarity = calculate_similarity(resume_text, job_desc)
 
         match_score = round(max(0, min(1, similarity)) * 100, 2)
 
